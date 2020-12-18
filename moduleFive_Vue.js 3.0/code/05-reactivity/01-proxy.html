@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <script>
+    'use strict'
+    // 问题1： set 和 deleteProperty 中需要返回布尔类型的值
+    //        在严格模式下，如果返回 false 的话会出现 Type Error 的异常
+    // const target = {
+    //   foo: 'xxx',
+    //   bar: 'yyy'
+    // }
+    // // Reflect.getPrototypeOf()
+    // // Object.getPrototypeOf()
+    // const proxy = new Proxy(target, {
+    //   // 访问
+    //   // receiver 表示当前的 proxy 对象或者继承的 proxy对象
+    //   get (target, key, receiver) {
+    //     // return target[key]
+    //     // Reflect(用来操作对象的成员) 反射 es6中新增的成员 代码运行期间用来获取或者设置对象的成员
+    //     // https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Reflect
+    //     return Reflect.get(target, key, receiver)
+    //   },
+    //   // 赋值
+    //   set (target, key, value, receiver) {
+    //     // target[key] = value
+    //     return Reflect.set(target, key, value, receiver)
+    //   },
+    //   // 删除
+    //   deleteProperty (target, key) {
+    //     // delete target[key]
+    //     return Reflect.deleteProperty(target, key)
+    //   }
+    // })
+
+    // proxy.foo = 'zzz'
+    // // delete proxy.foo
+
+
+    // 问题2：Proxy 和 Reflect 中使用的 receiver
+
+    // Proxy 中 receiver：Proxy 或者继承 Proxy 的对象
+    // Reflect 中 receiver：如果 target 对象中设置了 getter，getter 中的 this 指向 receiver
+
+    const obj = {
+      get foo() {
+        console.log(this)
+        return this.bar
+      }
+    }
+
+    const proxy = new Proxy(obj, {
+      get (target, key, receiver) {
+        if (key === 'bar') { 
+          return 'value - bar' 
+        }
+        return Reflect.get(target, key, receiver)
+      }
+    })
+    console.log(proxy.foo)
+  </script>
+</body>
+</html>

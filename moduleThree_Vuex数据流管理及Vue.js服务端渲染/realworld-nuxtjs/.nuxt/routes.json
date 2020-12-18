@@ -1,0 +1,51 @@
+[
+  {
+    "path": "/",
+    "component": "C:\\\\vscode\\\\lg_phase_one\\\\partThree_vue\\\\moduleThree_Vuex数据流管理及Vue.js服务端渲染\\\\realworld-nuxtjs\\\\pages\\\\layout",
+    "children": [
+      {
+        "path": "",
+        "name": "home",
+        "component": "C:\\\\vscode\\\\lg_phase_one\\\\partThree_vue\\\\moduleThree_Vuex数据流管理及Vue.js服务端渲染\\\\realworld-nuxtjs\\\\pages\\\\home",
+        "_name": "_c152d7de"
+      },
+      {
+        "path": "/login",
+        "name": "login",
+        "component": "C:\\\\vscode\\\\lg_phase_one\\\\partThree_vue\\\\moduleThree_Vuex数据流管理及Vue.js服务端渲染\\\\realworld-nuxtjs\\\\pages\\\\login",
+        "_name": "_4bb43677"
+      },
+      {
+        "path": "/register",
+        "name": "register",
+        "component": "C:\\\\vscode\\\\lg_phase_one\\\\partThree_vue\\\\moduleThree_Vuex数据流管理及Vue.js服务端渲染\\\\realworld-nuxtjs\\\\pages\\\\login",
+        "_name": "_4bb43677"
+      },
+      {
+        "path": "/profile/:username",
+        "name": "profile",
+        "component": "C:\\\\vscode\\\\lg_phase_one\\\\partThree_vue\\\\moduleThree_Vuex数据流管理及Vue.js服务端渲染\\\\realworld-nuxtjs\\\\pages\\\\profile",
+        "_name": "_08a74537"
+      },
+      {
+        "path": "/settings",
+        "name": "settings",
+        "component": "C:\\\\vscode\\\\lg_phase_one\\\\partThree_vue\\\\moduleThree_Vuex数据流管理及Vue.js服务端渲染\\\\realworld-nuxtjs\\\\pages\\\\settings",
+        "_name": "_c4fd1b56"
+      },
+      {
+        "path": "/editor",
+        "name": "editor",
+        "component": "C:\\\\vscode\\\\lg_phase_one\\\\partThree_vue\\\\moduleThree_Vuex数据流管理及Vue.js服务端渲染\\\\realworld-nuxtjs\\\\pages\\\\editor",
+        "_name": "_1e46bc1f"
+      },
+      {
+        "path": "/article/:slug",
+        "name": "article",
+        "component": "C:\\\\vscode\\\\lg_phase_one\\\\partThree_vue\\\\moduleThree_Vuex数据流管理及Vue.js服务端渲染\\\\realworld-nuxtjs\\\\pages\\\\article",
+        "_name": "_211ceef8"
+      }
+    ],
+    "_name": "_2a1595dc"
+  }
+]

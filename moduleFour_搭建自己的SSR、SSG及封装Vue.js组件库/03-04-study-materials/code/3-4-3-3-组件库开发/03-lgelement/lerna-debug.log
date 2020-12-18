@@ -1,0 +1,7 @@
+67 error Error: Command failed: git push --follow-tags --no-verify --atomic origin main
+67 error bash: /dev/tty: No such device or address
+67 error error: failed to execute prompt script (exit code 1)
+67 error fatal: could not read Username for 'https://github.com': No such file or directory
+67 error
+67 error     at makeError (D:\lagou\lg_phase_one\partThree_vue\moduleFour_搭建自己的SSR、SSG及封装Vue.js组件库\03-04-study-materials\code\3-4-3-3-组件库开发\03-lgelement\node_modules\execa\index.js:174:9)
+67 error     at D:\lagou\lg_phase_one\partThree_vue\moduleFour_搭建自己的SSR、SSG及封装Vue.js组件库\03-04-study-materials\code\3-4-3-3-组件库开发\03-lgelement\node_modules\execa\index.js:278:16

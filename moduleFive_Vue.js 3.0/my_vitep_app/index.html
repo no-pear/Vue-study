@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" href="/favicon.ico" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vite App</title>
+</head>
+<body>
+  <div id="app"></div>
+  <div id="vm">
+    <p>{{ msg }}</p>
+    <button @click='change'>点我</button>
+  </div>
+  <script type="module" src="/src/main.js"></script>
+  <script type="module">
+    import { createApp, ref } from './node_modules/vue/dist/vue.esm-browser.js'
+
+    const str = 'hello world'
+    createApp({
+      setup (){
+        const msg = ref(str);
+        console.log("setup -> str", str)
+        console.log("setup -> msg", msg)
+
+        const change = ()=>{
+          msg.value = 'bye'
+          console.log("change -> msg", msg)
+        }
+
+        return {
+          msg,
+          change
+        }
+      }
+    }).mount('#vm')
+  </script>
+</body>
+</html>

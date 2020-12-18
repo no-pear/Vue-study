@@ -1,0 +1,59 @@
+[
+  {
+    "name": "about",
+    "path": "/about",
+    "component": "D:\\\\lagou\\\\lg_phase_one\\\\partThree_vue\\\\moduleThree_Vuex数据流管理及Vue.js服务端渲染\\\\nuxtjs-demo\\\\pages\\\\about.vue",
+    "chunkName": "pages/about",
+    "_name": "_524582c3"
+  },
+  {
+    "path": "/parent",
+    "component": "D:\\\\lagou\\\\lg_phase_one\\\\partThree_vue\\\\moduleThree_Vuex数据流管理及Vue.js服务端渲染\\\\nuxtjs-demo\\\\pages\\\\parent.vue",
+    "chunkName": "pages/parent",
+    "children": [
+      {
+        "name": "parent",
+        "path": "",
+        "component": "D:\\\\lagou\\\\lg_phase_one\\\\partThree_vue\\\\moduleThree_Vuex数据流管理及Vue.js服务端渲染\\\\nuxtjs-demo\\\\pages\\\\parent\\\\index.vue",
+        "chunkName": "pages/parent/index",
+        "_name": "_e077e5c4"
+      },
+      {
+        "name": "parent-foo",
+        "path": "foo",
+        "component": "D:\\\\lagou\\\\lg_phase_one\\\\partThree_vue\\\\moduleThree_Vuex数据流管理及Vue.js服务端渲染\\\\nuxtjs-demo\\\\pages\\\\parent\\\\foo.vue",
+        "chunkName": "pages/parent/foo",
+        "_name": "_749b17dc"
+      }
+    ],
+    "_name": "_d59f0238"
+  },
+  {
+    "name": "user",
+    "path": "/user",
+    "component": "D:\\\\lagou\\\\lg_phase_one\\\\partThree_vue\\\\moduleThree_Vuex数据流管理及Vue.js服务端渲染\\\\nuxtjs-demo\\\\pages\\\\user\\\\index.vue",
+    "chunkName": "pages/user/index",
+    "_name": "_a8296a46"
+  },
+  {
+    "name": "user-one",
+    "path": "/user/one",
+    "component": "D:\\\\lagou\\\\lg_phase_one\\\\partThree_vue\\\\moduleThree_Vuex数据流管理及Vue.js服务端渲染\\\\nuxtjs-demo\\\\pages\\\\user\\\\one.vue",
+    "chunkName": "pages/user/one",
+    "_name": "_d0db319e"
+  },
+  {
+    "name": "user-id",
+    "path": "/user/:id",
+    "component": "D:\\\\lagou\\\\lg_phase_one\\\\partThree_vue\\\\moduleThree_Vuex数据流管理及Vue.js服务端渲染\\\\nuxtjs-demo\\\\pages\\\\user\\\\_id.vue",
+    "chunkName": "pages/user/_id",
+    "_name": "_40986085"
+  },
+  {
+    "name": "index",
+    "path": "/",
+    "component": "D:\\\\lagou\\\\lg_phase_one\\\\partThree_vue\\\\moduleThree_Vuex数据流管理及Vue.js服务端渲染\\\\nuxtjs-demo\\\\pages\\\\index.vue",
+    "chunkName": "pages/index",
+    "_name": "_71fd5d88"
+  }
+]

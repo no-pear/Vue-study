@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div id="app">
+        <!-- x: {{ x }} <br>
+        y: {{ y }} <br> -->
+
+        <button @click = 'increase'>
+            加一
+        </button> &nbsp;&nbsp;&nbsp;&nbsp;
+        <span>{{ count }}</span>
+    </div>
+
+    <script type="module">
+        import { createApp, reactive, onMounted, onUnmounted, toRefs, ref } from './node_modules/vue/dist/vue.esm-browser.js'
+
+        // 鼠标移动获取坐标
+        const useMousePosition = () => {
+            const position = reactive({
+                    x: 0,
+                    y: 0
+                })
+
+                const upPosition = e => {
+                    position.x = e.pageX
+                    position.y = e.pageY
+                }
+
+                onMounted(() => {
+                    window.addEventListener('mousemove', upPosition)
+                })
+
+                onUnmounted(() => {
+                    window.removeEventListener('mousemove', upPosition)
+                })
+                return toRefs(position)
+
+        }
+
+
+        // 自增
+        const useCrease = () => {
+            const count = ref(0)
+            console.log("🚀 ~ file: 01-createApp.html ~ line 49 ~ useCrease ~ count", count)
+            return {
+                count,
+                increase: () => {
+                    count.value++
+                }
+            }
+        }
+        const app = createApp({
+            setup () {
+                // const position = useMousePosition()
+                const { x, y } = useMousePosition()
+                // const { count, increase } = useCrease()
+                // console.log(useCrease())
+
+                return {
+                    x,
+                    y,
+                    // count,
+                    // increase
+                    ...useCrease()
+                }
+            },
+            // mounted () {
+            //     this.position.x = 100
+            // }
+        })
+        console.log('app: ', app)
+
+        app.mount('#app')
+    </script>
+</body>
+</html>
