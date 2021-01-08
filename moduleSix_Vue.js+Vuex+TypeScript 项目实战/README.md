@@ -652,3 +652,671 @@ export default Vue.extend({
 
 ```
 
+## 登录和认证
+
+### 一、登录
+
+#### 1）页面基本布局
+
+#### 2）登录接口封装
+
+```ts
+import request from '@/utils/request'
+import qs from 'qs'
+// import store from '@/store'
+
+interface User {
+    phone: string;
+    password: string;
+}
+
+// 登录
+export const login = (form: User) => {
+  return request({
+    method: 'POST',
+    url: '/front/user/login',
+    // headers: { 'content-type': 'application/x-www-form-urlencoded' },
+    /**
+     * 如果 data 是普通对象， 则 Content-Type 是 application/json
+     * 如果 data 是 qs.stringfity(data) 转换之后的数据：key=value&key=value, 则 Content-Type 会被设置成 application/x-www-form-urlencoded
+     * 如果 data 是 FormData 对象，则 Content-Type 是 multipart/form-data
+     */
+    data: qs.stringify(form) // axios 默认发送的是 application/json 格式的数据
+  })
+}
+```
+
+#### 3）登录处理
+
+- 表单验证
+- 验证通过提交表单
+- 处理请求结果
+  - 成功：跳转到首页
+  - 失败：给出提示
+
+`src/login/index.vue`
+
+```vue
+<template>
+  <div class="login">
+    <!-- :model="ruleForm" :rules="rules" ref="ruleForm" -->
+    <el-form ref="form" :model="form" :rules="rules" label-width="80px" label-position='top'>
+      <el-form-item label="手机号" prop="phone">
+        <el-input v-model="form.phone"></el-input>
+      </el-form-item>
+      <el-form-item label="密码" prop="password">
+        <el-input v-model="form.password" type="password"></el-input>
+      </el-form-item>
+      <el-form-item>
+        <el-button :loading='isLoginLoading' type="primary" @click="onSubmit">登录</el-button>
+      </el-form-item>
+    </el-form>
+  </div>
+</template>
+
+<script lang="ts">
+import Vue from 'vue'
+// import request from '@/utils/request'
+// import qs from 'qs'
+import { Form } from 'element-ui'
+import { login } from '@/services/user'
+
+export default Vue.extend({
+  name: 'LoginIndex',
+  data () {
+    return {
+      form: {
+        phone: '15510792995',
+        password: '111111'
+      },
+      isLoginLoading: false,
+      rules: {
+        phone: [
+          { required: true, message: '请输入手机号', trigger: 'blur' },
+          { pattern: /^1\d{10}$/, message: '请输入正确的手机号', trigger: 'blur' }
+        ],
+        password: [
+          { required: true, message: '请输入密码', trigger: 'blur' },
+          { min: 6, max: 18, message: '长度在 6 到 18 个字符', trigger: 'blur' }
+        ]
+      }
+    }
+  },
+  methods: {
+    async onSubmit () {
+      try {
+        // 1. 表单验证
+        await (this.$refs.form as Form).validate()
+
+        // 防止登录按钮多次点击
+        this.isLoginLoading = true
+
+        // 2. 验证通过 - 提交表单
+        // const { data } = await request({
+        //   method: 'POST',
+        //   url: '/front/user/login',
+        //   headers: { 'content-type': 'application/x-www-form-urlencoded' },
+        //   data: qs.stringify(this.form)
+        // })
+        const { data } = await login(this.form)
+        // console.log(data)
+        // 3. 处理请求结果
+        // 成功：跳转到首页
+        // 失败：给出提示
+        if (data.state !== 1) {
+          this.$message.error(data.message)
+        } else {
+          // 存储登录用户信息
+          this.$store.commit('setUser', data.content)
+          // 跳转首页
+          // this.$router.push({
+          //   name: 'home'
+          // })
+
+          // 登录成功跳转到首页或者跳转到登录前想去到的页面
+          this.$router.push(this.$route.query.redirect as string || '/')
+
+          this.$message.success('登录成功')
+        }
+
+        this.isLoginLoading = false
+      } catch (error) {
+        console.log('格式校验失败', false)
+      }
+    }
+  }
+})
+</script>
+
+<style lang="scss" scoped>
+.login {
+  background-color: $body-bg;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  .el-form {
+    background: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    width: 300px;
+    .el-button {
+      width: 100%;
+    }
+  }
+}
+</style>
+
+```
+
+
+
+### 二、认证
+
+对于某些页面，必须得登录才能访问，所以登录的时候服务器会返回一个 **access_token**，以后每次访问都可以在**请求头**中添加上，**access_token** 有
+
+有效期，过了有效期后，通过 **refresh_token** 去再次获取 **access_token**
+
+#### 1）路由
+
+```ts
+/**
+ * 全局前置守卫
+ * to: Route: 即将要进入的目标 路由对象
+ * from: Route: 当前导航正要离开的路由
+ * next: Function: 一定要调用该方法来 resolve 这个钩子。执行效果依赖 next 方法的调用参数。
+ */
+router.beforeEach((to, from, next) => {
+  // console.log('to--->', to)
+  // console.log('from--->', from)
+  // to.matched 是一个数组(匹配到的路由信息)
+  if (to.matched.some(record => record.meta.requiresAuth)) {
+    if (!store.state.user) {
+      next({
+        path: '/login',
+        query: { // 通过 url 传递查询字符串参数
+          redirect: to.fullPath // 把登录成功需要返回的页面告诉登录页面
+        }
+      })
+    } else {
+      next()
+    }
+  } else {
+    next()
+  }
+})
+```
+
+#### 2）请求拦截器
+
+```ts
+request.interceptors.request.use(function (config) {
+  // Do something before request is sent
+  // console.log(config)
+  const { user } = store.state
+  if (user && user.access_token) {
+    config.headers.Authorization = user.access_token
+  }
+
+  return config
+}, function (error) {
+  // Do something with request error
+  return Promise.reject(error)
+})
+```
+
+#### 3）响应拦截器
+
+```ts
+// 响应拦截器
+let isRefreshing = false // 控制刷新 token 的状态
+let requests: any[] = [] // 存储刷新 token 期间过来的 401 请求
+request.interceptors.response.use(function (response) { // 2xx 状态码
+  // console.log('response--->', response)
+
+  return response
+}, async function (error) { // 超出 2xx 范围状态码
+  // console.log('error--->', error)
+  if (error.response) { // 请求发出去收到响应了，但是状态码超出了 2xx 范围
+    const { status } = error.response
+    if (status === 400) {
+      Message.error('请求参数错误')
+    } else if (status === 401) {
+      /**
+       * token 失效
+       * 如果有 refresh_token 则尝试使用 refresh_token 获取新的token
+       * 如果没有，则直接跳转登录页
+       */
+
+      if (!store.state.user) {
+        redirectLogin()
+        return Promise.reject(error)
+      }
+
+      //  刷新 token
+      if (!isRefreshing) {
+        isRefreshing = true // 开启刷新状态
+
+        return refreshToken().then(res => {
+          if (!res.data.success) {
+            throw new Error('刷新 token 失败')
+          }
+
+          // 刷新 token 成功
+          store.commit('setUser', res.data.content)
+          // 把 requests 队列中的请求发送出去
+          requests.forEach(cb => {
+            cb()
+          })
+          // 重置 requests
+          requests = []
+          // console.log('error config-->', error.config) // 失败请求的配置信息
+          return request(error.config) // 第一个请求重新发送
+        }).catch(err => {
+          console.log('err-->', err)
+          // 清除当前登录用户状态
+          store.commit('setUser', null)
+          // 回到登录页
+          redirectLogin()
+          return Promise.reject(error)
+        }).finally(() => {
+          isRefreshing = false // 重置刷新状态
+        })
+
+        return
+      }
+
+      // 刷新状态下，把请求挂起放到 requests 数组中
+      return new Promise(resolve => {
+        requests.push(() => {
+          resolve(request(error.config))
+        })
+      })
+
+      // try {
+      //   // 尝试获取新的 token
+      //   const { data } = await axios.create()({
+      //     method: 'POST',
+      //     url: '/front/user/refresh_token',
+      //     data: qs.stringify({
+      //       refreshtoken: store.state.user.refresh_token
+      //     })
+      //   })
+      //   console.log('data:', data)
+      //   /**
+      //    * 把刷新拿到的新的 refresh_token 更新到容器和本地存储中
+      //    * 获取新的 token 成功， 把失败的请求重新发送出去
+      //    */
+      //   store.commit('setUser', data.content)
+      //   console.log('error config-->', error.config) // 失败请求的配置信息
+      //   return request(error.config)
+      // } catch (error) {
+      //   // 清除当前登录用户状态
+      //   store.commit('setUser', null)
+      //   // 回到登录页
+      //   redirectLogin()
+      //   return Promise.reject(error)
+      // }
+    } else if (status === 403) {
+      Message.error('没有权限，请联系管理员')
+    } else if (status === 404) {
+      Message.error('请求资源不存在')
+    } else if (status >= 500) {
+      Message.error('服务器错误')
+    }
+  } else if (error.request) { // 请求发出去没收到响应
+    Message.error('请求响应失败')
+  } else { // 在设置请求是发生了一些事情，触发了一个错误
+    Message.error(`请求失败: ${error.message}`)
+  }
+
+  return Promise.reject(error)
+})
+```
+
+
+
+## 用户和权限
+
+**不同用户拥有不同的角色身份(可以同时是多个角色)，每个角色拥有不同的权限，分配的菜单和资源不同**
+
+### 一、权限管理 - 菜单管理
+
+#### 1）实现思路
+
+- 实现**添加**菜单(添加和编辑菜单的页面基本一致，提前封装组件)
+- 获取所有菜单**展示**
+- 实现**编辑**
+- 实现**删除**
+
+#### 2）目录结构
+
+![image-20210108102703204](D:\lagou\lg_phase_one\partThree_vue\moduleSix_Vue.js+Vuex+TypeScript 项目实战\images\image-20210108102703204.png)
+
+#### 3）接口
+
+```ts
+/**
+ * 菜单相关请求模块
+ */
+
+import request from '@/utils/request'
+
+// 创建或更新菜单
+export const createOrUpdateMenu = (data: any) => {
+  return request({
+    method: 'POST',
+    url: '/boss/menu/saveOrUpdate',
+    data
+  })
+}
+
+// 获取编辑菜单页面信息
+export const getEditMenuInfo = (id: string | number = -1) => {
+  return request({
+    method: 'GET',
+    url: '/boss/menu/getEditMenuInfo',
+    params: {
+      id
+    }
+  })
+}
+
+// 获取所有菜单
+export const getAllMenus = () => {
+  return request({
+    method: 'GET',
+    url: '/boss/menu/getAll'
+  })
+}
+
+// 删除菜单
+export const deleteMenu = (id: number) => {
+  return request({
+    method: 'DELETE',
+    url: `/boss/menu/${id}`
+  })
+}
+
+// 获取所有菜单并按层级展示
+export const getMenuNodeList = () => {
+  return request({
+    method: 'GET',
+    url: '/boss/menu/getMenuNodeList'
+  })
+}
+
+// 给角色分配菜单
+export const allocateRoleMenus = (data: any) => {
+  return request({
+    method: 'POST',
+    url: '/boss/menu/allocateRoleMenus',
+    data
+  })
+}
+
+// 获取角色拥有的菜单列表
+export const getRoleMenus = (roleId: string | number) => {
+  return request({
+    method: 'GET',
+    url: '/boss/menu/getRoleMenus',
+    params: { // axios 会把 params 转换为 key=value&key=value 的数据格式放到 url 后面(以?分割)
+      roleId
+    }
+  })
+}
+
+```
+
+
+
+### 二、权限管理 - 资源管理
+
+#### 1）实现思路
+
++ 实现资源 **展示**
++ 资源 **编辑**
++ 资源 **删除**
++ 资源 **搜索**
+
+#### 2）目录结构
+
+![image-20210108103232215](D:\lagou\lg_phase_one\partThree_vue\moduleSix_Vue.js+Vuex+TypeScript 项目实战\images\image-20210108103232215.png)
+
+#### 3）接口
+
+```ts
+/**
+ * 资源相关请求模块
+ */
+
+import request from '@/utils/request'
+
+// 按条件分页查询资源
+export const getResourcePages = (data: any) => {
+  return request({
+    method: 'POST',
+    url: '/boss/resource/getResourcePages',
+    data
+  })
+}
+
+// 查询资源分类列表
+export const getResourceCategories = () => {
+  return request({
+    method: 'GET',
+    url: '/boss/resource/category/getAll'
+  })
+}
+
+// 获取所有资源
+export const getAllResources = () => {
+  return request({
+    method: 'GET',
+    url: '/boss/resource/getAll'
+  })
+}
+
+// 给角色分配资源
+export const allocateRoleResources = (data: any) => {
+  return request({
+    method: 'POST',
+    url: '/boss/resource/allocateRoleResources',
+    data
+  })
+}
+
+// 获取角色拥有的资源列表
+export const getRoleResources = (roleId: string | number) => {
+  return request({
+    method: 'GET',
+    url: '/boss/resource/getRoleResources',
+    params: {
+      roleId
+    }
+  })
+}
+
+```
+
+
+
+### 三、权限管理 - 角色管理
+
+#### 1）实现思路
+
++ 角色列表 **展示**
+
++ **添加** 角色
++ 给角色 **分配菜单**
++ 给角色 **分配资源**
++ **编辑** 角色
++ **删除** 角色
++ 角色 **查询**
+
+#### 2）目录结构
+
+![image-20210108103926223](D:\lagou\lg_phase_one\partThree_vue\moduleSix_Vue.js+Vuex+TypeScript 项目实战\images\image-20210108103926223.png)
+
+#### 3）接口
+
+```ts
+/**
+ * 角色相关请求模块
+ */
+
+import request from '@/utils/request'
+
+// 按条件查询角色
+export const getRoles = (data: any) => {
+  return request({
+    method: 'POST',
+    url: '/boss/role/getRolePages',
+    data
+  })
+}
+
+// 删除角色
+export const deleteRole = (id: string | number) => {
+  return request({
+    method: 'DELETE',
+    url: `/boss/role/${id}`
+  })
+}
+
+// 保存或者更新角色
+export const createOrUpdate = (data: any) => {
+  return request({
+    method: 'POST',
+    url: '/boss/role/saveOrUpdate',
+    data
+  })
+}
+
+// 获取角色
+export const getRoleById = (id: string | number) => {
+  return request({
+    method: 'GET',
+    url: `/boss/role/${id}`
+  })
+}
+
+// 获取所有角色
+export const getAllRoles = () => {
+  return request({
+    method: 'GET',
+    url: '/boss/role/all'
+  })
+}
+
+// 给用户分配角色
+export const allocateUserRoles = (data: any) => {
+  return request({
+    method: 'POST',
+    url: '/boss/role/allocateUserRoles',
+    data
+  })
+}
+
+// 查询用户角色
+export const getUserRoles = (userId: string | number) => {
+  return request({
+    method: 'GET',
+    url: `/boss/role/user/${userId}`
+  })
+}
+
+```
+
+
+
+### 四、用户管理
+
+#### 1）实现思路
+
++ 用户列表**展示**
++ 给用户 **分配角色**
++ 用户查询
++ 用户状态 **启用**
++ 用户状态 **禁用**
+
+#### 2）目录结构
+
+![image-20210108104504397](D:\lagou\lg_phase_one\partThree_vue\moduleSix_Vue.js+Vuex+TypeScript 项目实战\images\image-20210108104504397.png)
+
+#### 3）接口
+
+```ts
+/**
+ * 用户相关请求模块
+ *
+ */
+
+import request from '@/utils/request'
+import qs from 'qs'
+// import store from '@/store'
+
+interface User {
+    phone: string;
+    password: string;
+}
+
+// 登录
+export const login = (form: User) => {
+  return request({
+    method: 'POST',
+    url: '/front/user/login',
+    // headers: { 'content-type': 'application/x-www-form-urlencoded' },
+    /**
+     * 如果 data 是普通对象， 则 Content-Type 是 application/json
+     * 如果 data 是 qs.stringfity(data) 转换之后的数据：key=value&key=value, 则 Content-Type 会被设置成 application/x-www-form-urlencoded
+     * 如果 data 是 FormData 对象，则 Content-Type 是 multipart/form-data
+     */
+    data: qs.stringify(form) // axios 默认发送的是 application/json 格式的数据
+  })
+}
+
+// 获取用户信息
+export const getUserInfo = () => {
+  return request({
+    method: 'get',
+    url: '/front/user/getInfo'
+    // headers: {
+    //   Authorization: store.state.user.access_token
+    // }
+  })
+}
+
+// 分页查询用户信息
+export const getUserPages = (data: any) => {
+  return request({
+    method: 'POST',
+    url: '/boss/user/getUserPages',
+    data
+  })
+}
+
+// 封禁用户
+export const forbidUser = (userId: string | number) => {
+  return request({
+    method: 'POST',
+    url: '/boss/user/forbidUser',
+    data: {
+      userId
+    }
+  })
+}
+
+// 启用用户
+export const enableUser = (userId: string | number) => {
+  return request({
+    method: 'GET',
+    url: '/boss/user/enableUser',
+    params: {
+      userId
+    }
+  })
+}
+
+```
+
